@@ -2,7 +2,9 @@ import {
   sumOfArray,
   asyncSumOfArray,
   asyncSumOfArraySometimesZero,
+  getFirstNameThrowIfLong,
 } from "../functions"
+import { NameApiService } from "../nameApiService"
 import { DatabaseMock } from "../util"
 
 describe("sumOfArray() は数の配列の要素を合計する", () => {
@@ -49,7 +51,9 @@ describe("asyncSumOfArraySometimesZero() は数の配列をデータベースに
 
   describe("エラーが発生した場合 0 を返す", () => {
     it("[] を渡すと 0 を返す", async () => {
-      await expect(asyncSumOfArraySometimesZero([], mockSaveAlwaysSuccess)).resolves.toBe(0)
+      await expect(
+        asyncSumOfArraySometimesZero([], mockSaveAlwaysSuccess)
+      ).resolves.toBe(0)
     })
 
     it("文字列を渡すと 0 を返す", async () => {
@@ -66,5 +70,37 @@ describe("asyncSumOfArraySometimesZero() は数の配列をデータベースに
         asyncSumOfArraySometimesZero([1, 1], mockSaveAlwaysThrowError)
       ).resolves.toBe(0)
     })
+  })
+})
+
+describe("getFirstNameThrowIfLong() は NameApiService から firstName を取得する", () => {
+  let mockGetFirstNameA: NameApiService["getFirstName"]
+  beforeEach(() => {
+    mockGetFirstNameA = jest.fn(async () => "A")
+  })
+
+  describe("firstName.length <= maxNameLength の場合 firstNameを返す", () => {
+    it(`maxNameLength = 1, firstName = "A" の場合 "A" を返す`, async () => {
+      await expect(getFirstNameThrowIfLong(1, mockGetFirstNameA)).resolves.toBe(
+        "A"
+      )
+    })
+  })
+
+  describe("maxNameLength < firstName.length の場合 エラーになる", () => {
+    it(`maxNameLength = 0, firstName = "A" の場合 エラーになる`, async () => {
+      await expect(
+        getFirstNameThrowIfLong(0, mockGetFirstNameA)
+      ).rejects.toThrowError()
+    })
+  })
+
+  it("NameApiServiceからの取得に失敗した場合 エラーになる", async () => {
+    const mockGetFirstNameAlwaysThrowError = jest.fn(async () => {
+      throw new Error()
+    })
+    await expect(
+      getFirstNameThrowIfLong(1, mockGetFirstNameAlwaysThrowError)
+    ).rejects.toThrowError()
   })
 })
