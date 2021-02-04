@@ -2,7 +2,10 @@ import { NameApiService } from "./nameApiService";
 import { DatabaseMock } from "./util";
 
 export const sumOfArray = (numbers: number[]): number => {
-  return numbers.reduce((a: number, b: number): number => a + b, 0);
+  return numbers.reduce((prev: number, cur: number): number => {
+    if (isNaN(cur) || typeof cur !== "number") throw Error("Only numbers are allowed");
+    return prev + cur;
+  }, 0);
 };
 
 export const asyncSumOfArray = (numbers: number[]): Promise<number> => {
